@@ -1,5 +1,5 @@
-getPath: "C:/Users/Hacker/Downloads"
-savePath: "C:/Program Files (x86)/CHJD/CHMT-36VA/Files"  
+getPath: "/mnt/c/Users/Hacker/Downloads"
+savePath: "/mnt/c//Program Files (x86)/CHJD/CHMT-36VA/Files"  
 deleteSavedFiles: True 
 
 easyedaRequiredColumns: 
