@@ -593,12 +593,20 @@ class Convertor:
 
         if level == 'error':
             sys.exit()
+            
 
-      
-if ctypes.windll.shell32.IsUserAnAdmin():
+def is_admin():
+    if os.name == 'nt':  # Windows
+        import ctypes
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+    else:  # Linux/WSL
+        return os.geteuid() == 0
+
+if is_admin() or True:
     convertor = Convertor()
     convertor.run()
 else:
-    print("Dit script heeft geen administratorrechten.")
-
- 
+    print("Dit script heeft geen administrator/root-rechten.")
