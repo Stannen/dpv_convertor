@@ -149,8 +149,8 @@ class Convertor:
                             title = additionText
                     
                         print(f'--{title}--')
-                        for select in additionList:
-                            print(select) 
+                        for i in range(len(additionList)):
+                            print(f'[{i}]', additionList[i]) 
                         print('--end--')
                         
                 elif not additionText == None:
@@ -162,28 +162,27 @@ class Convertor:
                 if additionList == None or onlyPrint:  
                     break 
                 else:
-                    correct = False 
-                    for item in additionList:
-                        if command == item:
-                            correct = True 
-                    if correct:
-                        break
-                    else:
+
+                    if not command.isdigit() or int(command) > len(additionList) -1:
                         continue
-                                           
+
+                    command = additionList[int(command)]
+                    break
+                                     
             return command     
 
 
     def run(self):
         while True:
-            command = self.getInput(additionList=('help','convert','add','remove','close')) 
+            command = self.getInput(additionList=('help','convert','add','remove','close', 'find')) 
 
             if command == 'help':
                 print(''' \n
                          convert --> Convert the file to dpv \n
                          add --> Add a new component \n 
                          remove --> Remove a existing component \n
-                         close --> Close this application ''')
+                         close --> Close this application \n
+                         find --> find fo a component exist ''')
                 
             elif command == 'convert':
                 self.convert() 
@@ -196,7 +195,46 @@ class Convertor:
 
             elif command == 'close':
                 return 
+            
+            elif command == 'find':
+                componentsFound = []
+                componentItems = [] 
 
+                while True:
+                    for i in range(len(componentsFound)):
+                        print(f'{componentsFound[i]}')
+                        
+                    newItem = self.getInput('add component item')
+
+                    if newItem == 'exit':
+                        break 
+
+                    componentItems.append(newItem)
+                    componentsFound.clear()
+
+                    for category in self.components:
+                        components = self.components[category]
+
+                        for component in components.components:
+
+                            allItemsFound = True 
+                            for item in componentItems:
+                                itemFound = False 
+                                for rowItem in component:
+                                    if rowItem.lower().count(item) > 0:
+                                        itemFound = True 
+
+                                if not itemFound:
+                                    allItemsFound = False 
+
+                            if allItemsFound:
+                                
+                                componentsFound.append(component)
+
+                    if len(componentsFound) == 0:
+                        print('No components found')
+                        break 
+      
 
     def convert(self):
         dpvFiles = []    
@@ -289,17 +327,33 @@ class Convertor:
         filePath = f"{self.config['getPath']}/{fileName}.csv"
          
         easyedaData, easyedaColumns = prepareEasyedaData(filePath)
+
+        notFoundComponens, notComponens = [], []  
         
         for easyedaRow in easyedaData:
+            
             components, componentId = findComponent(easyedaRow, easyedaColumns)      
-            if components is None:
-                self.log(f'Component not found in database: {easyedaRow}', 'info')
-                continue
+            nozzleSelected, footprintSelected = None, None 
 
-            nozzleSelected, footprintSelected = findNozzleAndFootprint(components)
+            if components is not None:
+                nozzleSelected, footprintSelected = findNozzleAndFootprint(components)
+
+
             if nozzleSelected is None:
-                self.log(f'No nozzle found for the component "{components.components[componentId]}" in category {components.category}', 'info')
-                continue
+                found = False 
+                for nozzle in dict(self.config['nozzleMap']):
+                    footprints = self.config['nozzleMap'][nozzle]
+
+                    for footprint in footprints:
+                        if easyedaRow[easyedaColumns.index('footprint')].lower().count(footprint) > 0:
+                            found = True 
+
+                if found:
+                    notFoundComponens.append(easyedaRow)
+                else:
+                    notComponens.append(easyedaRow)
+                continue         
+ 
             
             dpvFile = get_dpv_file(nozzleSelected, footprintSelected, componentId, components)
             
@@ -314,8 +368,6 @@ class Convertor:
             else:
                 if dpvFile.nozzle1 != nozzleSelected and dpvFile.nozzle2 is None:
                     dpvFile.nozzle2 = nozzleSelected
-
-            #kijk of de feeder al bestaat
 
             if dpvFile.categorys.count(components.category) == 0:
                 dpvFile.categorys.append(components.category)
@@ -365,6 +417,12 @@ class Convertor:
 
             dpvFile.rawData.append([easyedaRow, components.category, componentId, nozzleSelected])
 
+        print('-- Componens not available --')
+        for item in notFoundComponens:
+            self.log(f'Not found {item}', 'info')
+
+        for item in notComponens:
+            self.log(f'No smd footprint {item} ', 'info')
 
 
         if self.config['deleteSavedFiles']:
@@ -436,7 +494,12 @@ class Convertor:
 
                     if key == 'head':
                         head = 1 if nozzleSelected == dpvFile.nozzle1 else 2
-                        ecomponent[key] = head                  
+                        ecomponent[key] = head   
+
+                    elif key == 'rotation':
+                        rotation = easyedaRow[easyedaColumns.index("rotation")]
+                        rotation -= 90
+                        ecomponent[key] = ((rotation+180)%360)-180
                     
                     elif key == 'explain':
                         ecomponent[key] = easyedaRow[easyedaColumns.index("designator")]
