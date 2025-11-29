@@ -1,0 +1,40 @@
+# Forceer LF line endings voor alle tekstbestanden
+*.sh      text eol=lf
+*.py      text eol=lf
+*.txt     text eol=lf
+*.md      text eol=lf
+*.html    text eol=lf
+*.css     text eol=lf
+*.js      text eol=lf
+*.json    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.ini     text eol=lf
+*.cfg     text eol=lf
+
+# Zorg dat requirements en configs altijd LF hebben
+requirements.txt text eol=lf
+Dockerfile       text eol=lf
+
+# Binaire bestanden ongemoeid laten
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.pdf     binary
+*.sqlite3 binary
+
+# Fonts en media
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+*.mp4     binary
+*.mp3     binary
+
+# Git zelf mag CRLF/LF niet aanpassen voor deze bestanden
+*.zip     binary
+*.tar     binary
+*.gz      binary
+*.tgz     binary
+
