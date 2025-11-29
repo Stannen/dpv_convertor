@@ -1,0 +1,88 @@
+getPath: "C:/Users/Hacker/Downloads"
+savePath: "C:/Program Files (x86)/CHJD/CHMT-36VA/Files"  
+deleteSavedFiles: True 
+
+easyedaRequiredColumns: 
+  - Device 
+  - Designator
+  - X
+  - Y
+  - Rotation
+  - Footprint
+  - Value  
+
+preferenceGroups:
+- - SOT
+  - SOP
+  - QFN
+  - TQFP
+
+nozzleMap: 
+  502:
+  - '0402'
+  503:
+  - '0603'
+  - 'SOD'
+  504:
+  - '0805'
+  - '1206'
+  - SOT
+  - UMAX
+  - MSOP
+  505:
+  - SOP
+  - SOIC
+  - SMD-4 
+  506:
+  - QFN  
+  - TQFP
+
+
+feederMap:
+  8:
+    minStationId: 1
+    maxStationId: 23
+    speed: 0 
+    feedRate: 0
+    pullSpeed: 0 
+  12:
+    minStationId: 23
+    maxStationId: 27
+    speed: 0 
+    feedRate: 0
+    pullSpeed: 0 
+  16:
+    minStationId: 27
+    maxStationId: 29
+    speed: 0 
+    feedRate: 0
+    pullSpeed: 0 
+  24:
+    minStationId: 29
+    maxStationId: 30
+    speed: 0 
+    feedRate: 0
+    pullSpeed: 0 
+
+
+station:
+  columns: [stationId, delt_x, delt_y, feedRate, note, height, speed, status, size_x, size_y, pullSpeed]
+  default:
+    size_x: 0
+    size_y: 0
+    delt_x: 0
+    delt_y: 0
+
+ecomponent:
+  columns: [head, stationId, x, y, rotation, height, skip, speed, explain, note]
+  default: {}
+
+
+calib_point:
+  columns: [x, y, note]
+  default: {}
+
+
+placeComponent: True 
+checkVacuum: True
+useVision: True

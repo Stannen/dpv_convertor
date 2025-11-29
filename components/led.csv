@@ -1,0 +1,5 @@
+"default feeder","tape size","device","footprint","color"
+"","8mm","0603","LED0603-GN","green"
+"","8mm","0603","LED0603-RD","red"
+"","8mm","0603","LED0603-BL","blue"
+"","12mm","WS2812B","5050","rgd"
