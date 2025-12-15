@@ -237,7 +237,7 @@ class Convertor:
       
 
     def convert(self):
-        dpvFiles = []    
+        dpvFiles, calib_points = [], []    
 
         def prepareEasyedaData(path):
             data = fnc.SeriesOperator(filePath, encoding='utf-16', delimiter='\t')
@@ -323,6 +323,63 @@ class Convertor:
             return None
                   
 
+        def addCalibPoint(easyedaRow, easyedaColumns):
+            calib_point = {}
+
+            for key in self.config['calib_point']['columns']:
+                useDefauld = False
+                if self.config['calib_point']['default'].get(key) is not None:
+                    calib_point[key] = self.config['calib_point']['default'][key]
+                    useDefauld = True
+                        
+                if key == 'note':
+                    calib_point[key] = f"{easyedaRow[easyedaColumns.index('designator')]}: {easyedaRow[easyedaColumns.index('footprint')]}"
+
+                elif easyedaColumns.count(key) > 0:
+                    calib_point[key] = easyedaRow[easyedaColumns.index(key)]
+
+                else:
+                    if not useDefauld:
+                        self.log(f'Key: {key} not found in easyeda export', 'error')
+
+            return calib_point
+
+
+        def distance(p1, p2):
+            dx = float(p1['x']) - float(p2['x'])
+            dy = float(p1['y']) - float(p2['y'])
+            return math.sqrt(dx**2 + dy**2)
+
+
+        def spread_score(points):
+            # minimale afstand als maat voor spreiding
+            dists = [distance(a, b) for a, b in itertools.combinations(points, 2)]
+            return sum(dists) / len(dists) if dists else 0
+
+
+        def best_spread(points, n):
+            """
+            Kies n punten uit de lijst die de maximale spreiding hebben.
+            Brute-force combinaties voor kleine n, greedy voor grotere n.
+            """
+            if n <= 2:
+                # gewoon de 2 verste punten
+                return max(itertools.combinations(points, n), key=spread_score)
+
+            # brute-force voor kleine sets
+            if len(points) < 20:  
+                return max(itertools.combinations(points, n), key=spread_score)
+
+            # greedy benadering voor grotere sets
+            chosen = [points[0]]
+            while len(chosen) < n:
+                candidates = [p for p in points if p not in chosen]
+                scores = [(spread_score(chosen + [c]), c) for c in candidates]
+                best = max(scores, key=lambda x: x[0])[1]
+                chosen.append(best)
+            return chosen
+
+
         fileName =  input('Enter the file name of a csv file you want to convert to dpv->')
         filePath = f"{self.config['getPath']}/{fileName}.csv"
          
@@ -330,14 +387,12 @@ class Convertor:
 
         notFoundComponens, notComponens = [], []  
         
-        for easyedaRow in easyedaData:
-            
+        for easyedaRow in easyedaData:        
             components, componentId = findComponent(easyedaRow, easyedaColumns)      
             nozzleSelected, footprintSelected = None, None 
 
             if components is not None:
                 nozzleSelected, footprintSelected = findNozzleAndFootprint(components)
-
 
             if nozzleSelected is None:
                 found = False 
@@ -353,8 +408,9 @@ class Convertor:
                 else:
                     notComponens.append(easyedaRow)
                 continue         
- 
-            
+              
+            calib_points.append(addCalibPoint(easyedaRow, easyedaColumns))
+                   
             dpvFile = get_dpv_file(nozzleSelected, footprintSelected, componentId, components)
             
             if dpvFile is None:
@@ -435,9 +491,10 @@ class Convertor:
                     self.log(f'Could not delete file: {file}. Error: {e}', 'info')
 
 
+        calib_points = best_spread(calib_points, 3)
 
         for dpvFile in dpvFiles:
-            stations, ecomponents, calib_points = [], [], [] 
+            stations, ecomponents = [], []
 
             for feeder in dpvFile.feeders:
                 station = {}
@@ -453,7 +510,7 @@ class Convertor:
                         useDefauld = True
 
                     if key == 'status':
-                        skip = 0b000
+                        skip = 0
                         if self.config['placeComponent']:
                             skip += 0b001
                         if self.config['checkVacuum']:
@@ -476,7 +533,6 @@ class Convertor:
                             self.log(f'Key: {key} not found in feeder or component export', 'error')
 
                 stations.append(station)
-
 
 
             for easyedaRow, category, componentId, nozzleSelected in dpvFile.rawData:
@@ -508,14 +564,14 @@ class Convertor:
                         ecomponent[key] = {easyedaRow[easyedaColumns.index("designator")]}
 
                     elif key == 'skip':
-                        skip = 0b000
+                        skip = 0
                         if self.config['placeComponent']:
                             skip += 0b001
                         if self.config['checkVacuum']:
                             skip += 0b010
                         if self.config['useVision']:
                             skip += 0b100
-                        station[key] = skip
+                        ecomponent[key] = skip
 
                     elif easyedaColumns.count(key) > 0:
                         ecomponent[key] = easyedaRow[easyedaColumns.index(key)]
@@ -529,63 +585,8 @@ class Convertor:
                 
                 ecomponents.append(ecomponent)
 
-
-                def addCalibPoint():
-                    calib_point = {}
-
-                    for key in self.config['calib_point']['columns']:
-                        useDefauld = False
-                        if self.config['calib_point']['default'].get(key) is not None:
-                            calib_point[key] = self.config['calib_point']['default'][key]
-                            useDefauld = True
-                        
-                        if key == 'note':
-                            calib_point[key] = f'{easyedaRow[easyedaColumns.index('designator')]}: {easyedaRow[easyedaColumns.index('footprint')]}'
-
-                        elif easyedaColumns.count(key) > 0:
-                            calib_point[key] = easyedaRow[easyedaColumns.index(key)]
-
-                        else:
-                            if not useDefauld:
-                                self.log(f'Key: {key} not found in easyeda export', 'error')
-
-                    return calib_point
-
-
-                def distance(p1, p2):
-                    dx = float(p1['x']) - float(p2['x'])
-                    dy = float(p1['y']) - float(p2['y'])
-                    return math.sqrt(dx**2 + dy**2)
-
-                def spread_score(points):
-                    # minimale afstand als maat voor spreiding
-                    dists = [distance(a, b) for a, b in itertools.combinations(points, 2)]
-                    return min(dists)
-
-                def point_contribution(point, points):
-                    # gemiddelde afstand van dit punt tot alle andere
-                    dists = [distance(point, other) for other in points if other is not point]
-                    return sum(dists) / len(dists)
-
-                if len(calib_points) < 3:
-                    calib_points.append(addCalibPoint())
-                else:
-                    current_score = spread_score(calib_points)
-
-                    new_point = addCalibPoint()
-                    new_score = spread_score(calib_points + [new_point])
-
-                    if new_score > current_score:
-                        # 🔹 vervang het punt dat het minst bijdraagt
-                        contributions = [point_contribution(p, calib_points) for p in calib_points]
-                        index = contributions.index(min(contributions))
-                        calib_points[index] = new_point
-
-
-
             now = datetime.now()
             
-
             fileName = f'H1_{dpvFile.nozzle1}_H2_{dpvFile.nozzle2}_{"_".join(dpvFile.categorys)}'
 
             header = {
@@ -602,6 +603,7 @@ class Convertor:
                     with open('template.dpv.j2', 'r') as f:
                         template = Template(f.read())
                     dpv.write(template.render(header=header, stations=stations, ecomponents=ecomponents, calib_points=calib_points))
+                print(f'File: {fileName} saved')
 
             except Exception as e:
                 self.log(f'Could not save dpv file. Error: {e}', 'info')
