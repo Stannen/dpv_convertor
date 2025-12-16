@@ -42,26 +42,22 @@ feederMap:
   8:
     minStationId: 1
     maxStationId: 23
-    speed: 0 
-    feedRate: 0
+    speed: 100 
     pullSpeed: 0 
   12:
     minStationId: 23
     maxStationId: 27
-    speed: 0 
-    feedRate: 0
+    speed: 80 
     pullSpeed: 0 
   16:
     minStationId: 27
     maxStationId: 29
-    speed: 0 
-    feedRate: 0
+    speed: 70 
     pullSpeed: 0 
   24:
     minStationId: 29
     maxStationId: 30
-    speed: 0 
-    feedRate: 0
+    speed: 50 
     pullSpeed: 0 
 
 

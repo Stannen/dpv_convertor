@@ -76,7 +76,7 @@ class Convertor:
         return None
 
 
-    def getTapeSize(self, tapeSize):
+    def get_digit(self, tapeSize):
         tape = ''
         for char in tapeSize:
             if char.isdigit():
@@ -111,7 +111,7 @@ class Convertor:
                     feeder.category = category
                     feeder.componentId = componentId
                     feeder.stationId = int(defaultFeeder)
-                    feeder.tapeSize = self.getTapeSize(component[components.columns.index('tape size')])
+                    feeder.tapeSize = self.get_digit(component[components.columns.index('tape size')])
 
                     f = self.config['feederMap'][feeder.tapeSize]
                     for key in f:
@@ -298,7 +298,7 @@ class Convertor:
         def get_dpv_file(nozzleSelected, footprintSelected, componentId, componentClass):
             groupAvailable = findFootprintGroup(footprintSelected)            
 
-            tapeSize = self.getTapeSize(componentClass.components[componentId][componentClass.columns.index('tape size')])
+            tapeSize = self.get_digit(componentClass.components[componentId][componentClass.columns.index('tape size')])
             minStationId = self.config['feederMap'][tapeSize]['minStationId']
             maxStationId = self.config['feederMap'][tapeSize]['maxStationId']
 
@@ -437,7 +437,7 @@ class Convertor:
                     feeder = self.Feeders()
                     feeder.category = components.category
                     feeder.componentId = componentId
-                    feeder.tapeSize = self.getTapeSize(components.components[componentId][components.columns.index('tape size')])
+                    feeder.tapeSize = self.get_digit(components.components[componentId][components.columns.index('tape size')])
 
                     f = self.config['feederMap'][feeder.tapeSize]
                     for key in f:
@@ -518,6 +518,9 @@ class Convertor:
                         if self.config['useVision']:
                             skip += 0b100
                         station[key] = skip
+
+                    elif key == 'feedRate':
+                        station[key] = self.get_digit(component[componentColumns.index('tape feed')])
 
                     elif key == 'note':
                         station[key] = component[componentColumns.index('footprint')]
