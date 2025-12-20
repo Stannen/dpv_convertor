@@ -23,10 +23,5 @@ env/
 # =========================================
 # OS-specifiek
 # =========================================
-.DS_Store
-Thumbs.db
-
-sockets/
-
-ToOrder.txt
+.vs/
 log.log 
