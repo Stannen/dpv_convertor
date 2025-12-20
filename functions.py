@@ -95,8 +95,8 @@ def fileOperator(path, returnList=False, deleteExtension=True):
         returnList=True (return list of files)'''
 
     if returnList:
-        if os.path.exists(path):
-            returnData = [] 
+        returnData = [] 
+        if os.path.exists(path):     
             for root, dirs, files in os.walk(path):   
                 if not path == root:
                     continue                
@@ -107,8 +107,7 @@ def fileOperator(path, returnList=False, deleteExtension=True):
                 else:
                     for select in files:     
                         returnData.append(select) 
-            return returnData
-
+        return returnData
     else:
         return os.path.isfile(path)
 

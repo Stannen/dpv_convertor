@@ -45,6 +45,7 @@ class Convertor:
             stationId: int = None
             minStationId: int = None
             maxStationId: int = None
+            nozzle: int = None
             tapeSize: int = None
             head: int = None
 
@@ -64,8 +65,8 @@ class Convertor:
 
         self.config = fnc.yamlOperator('config.yaml')
 
-        self.defaultFeeders = list() #device 
-        self.components = dict()   #category
+        self.defaultFeeders = list() 
+        self.components = dict()   
         self.loadComponents()
 
 
@@ -85,6 +86,16 @@ class Convertor:
         return int(tape)
 
 
+    def findNozzleAndFootprint(self, componentClass, componentId):
+        nozzleSelected, footprintSelected = None, None  
+        for nozzle in dict(self.config['nozzleMap']):
+            footprints = self.config['nozzleMap'][nozzle]['footprint']
+
+            for footprint in footprints:
+                if componentClass.components[componentId][componentClass.columns.index('footprint')].lower().count(footprint.lower()) == 1:
+                    return nozzle, footprint
+        return None, None
+    
     def loadComponents(self):
         path = 'components'
 
@@ -105,6 +116,7 @@ class Convertor:
                     continue
 
                 componentId = components.components.index(component)
+                nozzle, footprint = self.findNozzleAndFootprint(components, componentId)
 
                 if self.findFeeder(self.defaultFeeders, category, componentId) is None:
                     feeder = self.Feeders()
@@ -112,6 +124,7 @@ class Convertor:
                     feeder.componentId = componentId
                     feeder.stationId = int(defaultFeeder)
                     feeder.tapeSize = self.get_digit(component[components.columns.index('tape size')])
+                    feeder.nozzle = nozzle 
 
                     f = self.config['feederMap'][feeder.tapeSize]
                     for key in f:
@@ -275,18 +288,7 @@ class Convertor:
                     if exist:
                         return components, components.components.index(component)                         
             return None, None
-
-
-        def findNozzleAndFootprint(componentClass):
-            nozzleSelected, footprintSelected = None, None  
-            for nozzle in dict(self.config['nozzleMap']):
-                footprints = self.config['nozzleMap'][nozzle]
-
-                for footprint in footprints:
-                    if componentClass.components[componentId][componentClass.columns.index('footprint')].lower().count(footprint.lower()) == 1:
-                        return nozzle, footprint
-            return None, None
-
+        
 
         def findFootprintGroup(footprintSelected):
             for group in self.config['preferenceGroups']:
@@ -392,12 +394,12 @@ class Convertor:
             nozzleSelected, footprintSelected = None, None 
 
             if components is not None:
-                nozzleSelected, footprintSelected = findNozzleAndFootprint(components)
+                nozzleSelected, footprintSelected = self.findNozzleAndFootprint(components, componentId)
 
             if nozzleSelected is None:
                 found = False 
                 for nozzle in dict(self.config['nozzleMap']):
-                    footprints = self.config['nozzleMap'][nozzle]
+                    footprints = self.config['nozzleMap'][nozzle]['footprint']
 
                     for footprint in footprints:
                         if easyedaRow[easyedaColumns.index('footprint')].lower().count(footprint) > 0:
@@ -438,6 +440,7 @@ class Convertor:
                     feeder.category = components.category
                     feeder.componentId = componentId
                     feeder.tapeSize = self.get_digit(components.components[componentId][components.columns.index('tape size')])
+                    feeder.nozzle = nozzleSelected
 
                     f = self.config['feederMap'][feeder.tapeSize]
                     for key in f:
@@ -510,12 +513,11 @@ class Convertor:
                         useDefauld = True
 
                     if key == 'status':
-                        skip = 0
-                        if not self.config['placeComponent']:
-                            skip += 0b001
-                        if self.config['checkVacuum']:
+                        config = self.config['nozzleMap'][feeder.nozzle]
+                        skip = 0b001
+                        if config['checkVacuum']:
                             skip += 0b010
-                        if self.config['useVision']:
+                        if config['useVision']:
                             skip += 0b100
                         station[key] = skip
 
@@ -523,7 +525,10 @@ class Convertor:
                         station[key] = self.get_digit(component[componentColumns.index('tape feed')])
 
                     elif key == 'note':
-                        station[key] = f"{feeder.category} {component[componentColumns.index('device')]}"
+                        station['note'] = ''
+                        for key in self.config['noteMap'][feeder.category]:
+                            if componentColumns.count(key) > 0:
+                                station['note'] += component[componentColumns.index(key)] + ' '
 
                     elif hasattr(feeder, key):
                         station[key] = feeder.__dict__[key]
@@ -564,17 +569,19 @@ class Convertor:
                         ecomponent[key] = easyedaRow[easyedaColumns.index("designator")]
 
                     elif key == 'note':
-                        ecomponent[key] = easyedaRow[easyedaColumns.index("designator")]
+                        ecomponent['note'] = ''
+                        for key in self.config['noteMap'][feeder.category]:
+                            if componentColumns.count(key) > 0:
+                                ecomponent['note'] += easyedaColumns[componentColumns.index(key)] + ' '
 
                     elif key == 'skip':
-                        skip = 0
-                        if not self.config['placeComponent']:
-                            skip += 0b001
-                        if self.config['checkVacuum']:
+                        config = self.config['nozzleMap'][nozzleSelected]
+                        skip = 0b001
+                        if config['checkVacuum']:
                             skip += 0b010
-                        if self.config['useVision']:
+                        if config['useVision']:
                             skip += 0b100
-                        ecomponent[key] = skip
+                        station[key] = skip               
 
                     elif easyedaColumns.count(key) > 0:
                         ecomponent[key] = easyedaRow[easyedaColumns.index(key)]

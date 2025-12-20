@@ -21,44 +21,50 @@ nozzleMap:
   502:
     footprint: ['0402']   
     speed: 100
+    checkVacuum: True
+    useVision: True
   503:
-    footprint: ['0603', 'SOD']  
+    footprint: ['0603', SOD]  
     speed: 90
+    checkVacuum: True
+    useVision: True
   504:
     footprint: ['0805', '1206', SOT, UMAX, MSOP]  
     speed: 80
+    checkVacuum: True
+    useVision: True
   505:
     footprint: [SOP, SOIC, SMD-4]   
-    speed:
-
-
+    speed: 70
+    checkVacuum: True
+    useVision: True
   506:
-  - QFN  
-  - TQFP
-
+    footprint: [SMD-8, QFN, TQFP]  
+    speed: 50
+    checkVacuum: True
+    useVision: True
 
 feederMap:
   8:
     minStationId: 1
     maxStationId: 23
-    speed: 100 
-    pullSpeed: 0 
   12:
     minStationId: 23
     maxStationId: 27
-    speed: 80 
-    pullSpeed: 0 
   16:
     minStationId: 27
     maxStationId: 29
-    speed: 70 
-    pullSpeed: 0 
   24:
     minStationId: 29
     maxStationId: 30
-    speed: 50 
-    pullSpeed: 0 
 
+noteMap: 
+  capacitors: [footprint, value]
+  diodes: [device, max volt, max current]
+  ic: [device, footprint]
+  led: [device, color]  
+  resistors: [footprint, value]
+  trans_mosfet: [device, footprint]
 
 station:
   columns: [stationId, delt_x, delt_y, feedRate, note, height, speed, status, size_x, size_y, pullSpeed]
@@ -72,12 +78,6 @@ ecomponent:
   columns: [head, stationId, x, y, rotation, height, skip, speed, explain, note]
   default: {}
 
-
 calib_point:
   columns: [x, y, note]
   default: {}
-
-
-placeComponent: True 
-checkVacuum: True
-useVision: True
