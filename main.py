@@ -511,7 +511,7 @@ class Convertor:
 
                     if key == 'status':
                         skip = 0
-                        if self.config['placeComponent']:
+                        if not self.config['placeComponent']:
                             skip += 0b001
                         if self.config['checkVacuum']:
                             skip += 0b010
@@ -523,7 +523,7 @@ class Convertor:
                         station[key] = self.get_digit(component[componentColumns.index('tape feed')])
 
                     elif key == 'note':
-                        station[key] = component[componentColumns.index('footprint')]
+                        station[key] = f"{feeder.category} {component[componentColumns.index('device')]}"
 
                     elif hasattr(feeder, key):
                         station[key] = feeder.__dict__[key]
@@ -564,11 +564,11 @@ class Convertor:
                         ecomponent[key] = easyedaRow[easyedaColumns.index("designator")]
 
                     elif key == 'note':
-                        ecomponent[key] = {easyedaRow[easyedaColumns.index("designator")]}
+                        ecomponent[key] = easyedaRow[easyedaColumns.index("designator")]
 
                     elif key == 'skip':
                         skip = 0
-                        if self.config['placeComponent']:
+                        if not self.config['placeComponent']:
                             skip += 0b001
                         if self.config['checkVacuum']:
                             skip += 0b010

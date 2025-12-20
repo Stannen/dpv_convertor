@@ -19,20 +19,19 @@ preferenceGroups:
 
 nozzleMap: 
   502:
-  - '0402'
+    footprint: ['0402']   
+    speed: 100
   503:
-  - '0603'
-  - 'SOD'
+    footprint: ['0603', 'SOD']  
+    speed: 90
   504:
-  - '0805'
-  - '1206'
-  - SOT
-  - UMAX
-  - MSOP
+    footprint: ['0805', '1206', SOT, UMAX, MSOP]  
+    speed: 80
   505:
-  - SOP
-  - SOIC
-  - SMD-4 
+    footprint: [SOP, SOIC, SMD-4]   
+    speed:
+
+
   506:
   - QFN  
   - TQFP

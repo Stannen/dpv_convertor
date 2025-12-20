@@ -1,4 +1,4 @@
-"default feeder","tape size","tape feed", "device","footprint","max volt", "max current"
+"default feeder","tape size","tape feed","device","footprint","max volt", "max current"
 "","8 mm","4 mm","BC807","SOT-23","45V","500MA"
 "","8 mm","4 mm","AO3400A","SOT-23","30V","5.7A"
 "","8 mm","4 mm","BC817","SOT-23","45V","500MA"

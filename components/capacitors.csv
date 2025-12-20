@@ -1,4 +1,4 @@
-"default feeder","tape size","tape feed", "device","footprint","value","max volt"
+"default feeder","tape size","tape feed","device","footprint","value","max volt"
 "1","8 mm","4 mm","C1608","C0603","10uF","50V"
 "2","8 mm","4 mm","C1608","C0603","100nF","50V"
 "3","8 mm","4 mm","C3216","C1206","10uF","50V"

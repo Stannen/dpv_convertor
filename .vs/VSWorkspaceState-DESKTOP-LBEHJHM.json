@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\components"
   ],
-  "SelectedNode": "\\config.yaml",
+  "SelectedNode": "\\main.py",
   "PreviewInSolutionExplorer": false
 }
