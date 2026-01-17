@@ -16,6 +16,9 @@ preferenceGroups:
   - SOP
   - QFN
   - TQFP
+  - MSOP
+  - SOIC
+  - UMAX
 
 nozzleMap: 
   502:
@@ -34,7 +37,7 @@ nozzleMap:
     checkVacuum: True
     useVision: True
   505:
-    footprint: [SOP, SOIC, SMD-4]   
+    footprint: ['SOP', SOIC, SMD-4]   
     speed: 70
     checkVacuum: True
     useVision: True

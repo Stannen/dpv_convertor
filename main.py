@@ -13,6 +13,7 @@ import math
 import functions as fnc  
 from dataclasses import dataclass, field
 
+
 class Convertor:
     def __init__(self):
 
@@ -277,11 +278,12 @@ class Convertor:
         def findComponent(easyedaRow, easyedaColumns):
             for category in self.components:
                 components = self.components[category]
+                keyColumns = self.config['noteMap'][category]
 
                 for component in components.components:
                     exist = True 
-                    for column in easyedaColumns:
-                        if components.columns.count(column) > 0:
+                    for column in keyColumns:
+                        if components.columns.count(column) > 0 and easyedaColumns.count(column) > 0:
                             if not easyedaRow[easyedaColumns.index(column)].lower().count(component[components.columns.index(column)].lower()) == 1:
                                 exist = False
 
@@ -335,7 +337,7 @@ class Convertor:
                     useDefauld = True
                         
                 if key == 'note':
-                    calib_point[key] = f"{easyedaRow[easyedaColumns.index('designator')]}: {easyedaRow[easyedaColumns.index('footprint')]}"
+                    calib_point[key] = easyedaRow[easyedaColumns.index('designator')] #{easyedaRow[easyedaColumns.index('footprint')]}"
 
                 elif easyedaColumns.count(key) > 0:
                     calib_point[key] = easyedaRow[easyedaColumns.index(key)]
@@ -402,8 +404,9 @@ class Convertor:
                     footprints = self.config['nozzleMap'][nozzle]['footprint']
 
                     for footprint in footprints:
-                        if easyedaRow[easyedaColumns.index('footprint')].lower().count(footprint) > 0:
+                        if easyedaRow[easyedaColumns.index('footprint')].lower().count(footprint.lower()) > 0:
                             found = True 
+                            break
 
                 if found:
                     notFoundComponens.append(easyedaRow)
@@ -514,7 +517,7 @@ class Convertor:
 
                     if key == 'status':
                         config = self.config['nozzleMap'][feeder.nozzle]
-                        skip = 0b001
+                        skip = 0#0b001
                         if config['checkVacuum']:
                             skip += 0b010
                         if config['useVision']:
@@ -545,8 +548,10 @@ class Convertor:
 
             for easyedaRow, category, componentId, nozzleSelected in dpvFile.rawData:
                 components = self.components[category]
+                componentColumns = components.columns
+                component = components.components[componentId]
                 ecomponent = {}
-
+                
                 feeder = self.findFeeder(dpvFile.feeders, category, componentId)
                 
                 for key in self.config['ecomponent']['columns']:
@@ -562,7 +567,7 @@ class Convertor:
 
                     elif key == 'rotation':
                         rotation = easyedaRow[easyedaColumns.index("rotation")]
-                        rotation -= 90
+                        rotation += 90
                         ecomponent[key] = ((rotation+180)%360)-180
                     
                     elif key == 'explain':
@@ -572,16 +577,16 @@ class Convertor:
                         ecomponent['note'] = ''
                         for key in self.config['noteMap'][feeder.category]:
                             if componentColumns.count(key) > 0:
-                                ecomponent['note'] += easyedaColumns[componentColumns.index(key)] + ' '
+                                ecomponent['note'] += component[componentColumns.index(key)] + ' ' #dit klopt niet !!!
 
                     elif key == 'skip':
                         config = self.config['nozzleMap'][nozzleSelected]
-                        skip = 0b001
+                        skip = 0#0b001
                         if config['checkVacuum']:
                             skip += 0b010
                         if config['useVision']:
                             skip += 0b100
-                        station[key] = skip               
+                        ecomponent[key] = skip               
 
                     elif easyedaColumns.count(key) > 0:
                         ecomponent[key] = easyedaRow[easyedaColumns.index(key)]

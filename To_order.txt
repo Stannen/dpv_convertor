@@ -1,0 +1,3 @@
+LM393 sop-8
+SMCJ440A smc_
+AD7992BRM-1 msop-10
